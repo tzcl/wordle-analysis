@@ -22,7 +22,7 @@ std::string get_guess() {
 // X -- wrong letter
 // Y -- right letter wrong spot
 // G -- right letter right spot
-std::string process_guess(const std::string &guess, const std::string &word) {
+std::string colour_guess(const std::string &guess, const std::string &word) {
   std::unordered_multiset<char> letters(word.begin(), word.end());
 
   std::string response;
@@ -59,9 +59,9 @@ std::vector<std::string> read_words(std::string filename) {
 
 int main() {
   // Test cases
-  assert(process_guess("FEAST", "NASTY") == "XXYYY");
-  assert(process_guess("TREAT", "TASTY") == "GXXYY");
-  assert(process_guess("NASTY", "TASTY") == "XGGGG");
+  assert(colour_guess("FEAST", "NASTY") == "XXYYY");
+  assert(colour_guess("TREAT", "TASTY") == "GXXYY");
+  assert(colour_guess("NASTY", "TASTY") == "XGGGG");
 
   // Read in valid answers and guesses
   const std::vector<std::string> ANSWERS = read_words("answers");
@@ -89,7 +89,7 @@ int main() {
       guess = get_guess();
     }
     // Respond to guess
-    std::string response = process_guess(guess, word);
+    std::string response = colour_guess(guess, word);
     if (response == "GGGGG") {
       std::stringstream result;
       result << "You won in ";

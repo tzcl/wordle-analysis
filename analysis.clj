@@ -1,13 +1,10 @@
-(->> (slurp "answers")
-     (clojure.string/split-lines)
-     (count))
+(def answers
+  (->> (slurp "answers")
+       (clojure.string/split-lines)))
 
-(->> (slurp "words")
-     (clojure.string/split-lines)
-     (count))
+(def words
+  (->> (slurp "words")
+       (clojure.string/split-lines)))
 
-(+ 2309 10638)
-
-(def words (slurp "answers"))
-(+ 2 2)
-
+(->> words
+     (filter #(re-matches #"..tt." %)))

@@ -5,35 +5,58 @@
 #include <unordered_map>
 #include <vector>
 
-// Returns a string like XYGGX
-// X -- wrong letter
+// Returns a string like xYGGx
+// x -- wrong letter
 // Y -- right letter wrong spot
 // G -- right letter right spot
-std::string process_guess(const std::string &guess, const std::string &word) {
-  std::unordered_map<char, int> letters;
-  for (auto l : word) {
-    ++letters[l];
-  }
+std::string colour_guess(const std::string &guess, const std::string &answer) {
+  std::unordered_map<char, int> count;
+  for (auto l : answer)
+    ++count[l];
 
-  std::string response;
+  // So we can mutate the string
+  std::vector<char> response(5, 'x');
+
   for (int i = 0; i < guess.size(); ++i) {
-    if (guess[i] == word[i]) {
-      response += 'G';
-      continue;
+    if (guess[i] == answer[i]) {
+      --count[answer[i]];
+      response[i] = 'G';
     }
-
-    if (letters.count(guess[i])) {
-      if (letters[guess[i]] > 0) {
-        --letters[guess[i]];
-        response += 'Y';
-      }
-      continue;
-    }
-
-    response += 'X';
   }
 
-  return response;
+  for (int i = 0; i < guess.size(); ++i) {
+    if (response[i] == 'G')
+      continue;
+
+    if (count.find(guess[i]) != count.end() && count[guess[i]]) {
+      --count[guess[i]];
+      response[i] = 'Y';
+    }
+  }
+
+  return std::string(response.begin(), response.end());
+}
+
+bool valid_solution(const std::vector<std::string> &words,
+                    const std::vector<std::string> &answers) {
+  std::unordered_map<std::string, std::string> responses;
+  // Generate responses
+  for (auto ans : answers) {
+    std::string acc;
+    for (auto word : words) {
+      acc += colour_guess(word, ans);
+    }
+
+    if (responses.count(acc)) {
+      std::cout << "Duplicate: " << ans << " and " << responses[acc] << " ("
+                << acc << ")" << std::endl;
+      return false;
+    }
+
+    responses[acc] = ans;
+  }
+
+  return true;
 }
 
 std::vector<std::string> read_words(std::string filename) {
@@ -49,19 +72,24 @@ std::vector<std::string> read_words(std::string filename) {
 }
 
 int main() {
-
   // Test cases
-  assert(process_guess("FEAST", "NASTY") == "XXYYY");
-  assert(process_guess("TREAT", "TASTY") == "GXXYY");
-  assert(process_guess("TREAT", "BUTTE") == "YXYXY");
-  assert(process_guess("NASTY", "TASTY") == "XGGGG");
+  assert(colour_guess("FEAST", "NASTY") == "xxYYY");
+  assert(colour_guess("TREAT", "TASTY") == "GxxYY");
+  assert(colour_guess("NASTY", "TASTY") == "xGGGG");
+  assert(colour_guess("TREAT", "BUTTE") == "YxYxY");
+  assert(colour_guess("COMBO", "BOBBY") == "xGxGx");
+  assert(colour_guess("COMBO", "BOOBY") == "xGxGY");
+  assert(colour_guess("FATTY", "ZESTY") == "xxxGG");
 
   // Read in valid answers and guesses
+  const std::vector<std::string> WORDS = read_words("words");
   const std::vector<std::string> ANSWERS = read_words("answers");
-  const std::vector<std::string> GUESSES = read_words("guesses");
 
+  assert(WORDS.size() == 12947);
   assert(ANSWERS.size() == 2309);
-  assert(GUESSES.size() == 10638);
+
+  assert(valid_solution({"combo", "fatty", "grrrl", "spuds", "venge", "whilk"},
+                        ANSWERS));
 
   std::cout << "Hello world!" << std::endl;
   return 0;
